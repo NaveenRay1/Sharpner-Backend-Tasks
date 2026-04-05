@@ -34,7 +34,7 @@ app.get('/users',async (req,res)=>{
          const result = await Users.findAll();
         if(result.length ===0)return res.status(404).json({message:"No user found"});
         console.log("list of all users are",result);
-        return res.status(200).json({message:"list of all users are", ress:result});
+        return res.status(200).json({message:"list of all users are", data:result});
     }
     catch(err){
         console.log("err",err);
