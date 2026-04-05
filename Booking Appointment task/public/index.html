@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Booking Appointment App</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            padding: 30px;
+            background-color: #f5f5f5;
+        }
+
+        h1 {
+            font-size: 22px;
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+
+        input {
+            display: block;
+            width: 250px;
+            padding: 6px 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        button[type="submit"] {
+            padding: 8px 20px;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-bottom: 25px;
+        }
+
+        button[type="submit"]:hover {
+            background-color: #f0f0f0;
+        }
+
+        #user-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        #user-list li {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .delete-btn {
+            padding: 4px 10px;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        .delete-btn:hover {
+            background-color: #ffe0e0;
+            border-color: #e00;
+        }
+
+        .edit-btn {
+            padding: 4px 10px;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        .edit-btn:hover {
+            background-color: #e0f0ff;
+            border-color: #00e;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>BOOKING APPOINTMENT APP</h1>
+
+    <form id="booking-form">
+        <label>UserName</label>
+        <input type="text" id="name" placeholder="Enter name" />
+
+        <label>Phone Number</label>
+        <input type="text" id="phoneNumber" placeholder="Enter phone number" />
+
+        <label>Email</label>
+        <input type="email" id="email" placeholder="Enter email" />
+
+        <button type="submit">Submit</button>
+    </form>
+
+    <ul id="user-list"></ul>
+
+    <script src="script.js"></script>
+
+</body>
+</html>
