@@ -18,6 +18,7 @@ const getBusBookings = async(req,res)=>{
     const busId = req.params.id;
     if(isNaN(busId))return res.status(400).json({message:"id should be number"});
     try{
+        
         const result = await Bus.findByPk(busId,{include:Booking});
         if(!result)return res.status(404).json({message:"bus not found"});
         console.log("buses with all bookings",result);
