@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Table</title>
+    <style>
+        /* Basic styling to space things out */
+        body { font-family: sans-serif; padding: 20px; }
+        .field-row { margin-bottom: 10px; }
+        .container { border: 1px solid #ccc; padding: 20px; max-width: 500px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Create Table</h2>
+        
+        <form id="createTableForm">
+            <div style="margin-bottom: 20px;">
+                <label style="display:block;">Table name</label>
+                <input type="text" id="tableName" required>
+            </div>
+            
+            <div style="display: flex; justify-content: space-between;">
+                <strong>Field names</strong>
+                <strong>Type</strong>
+            </div>
+
+            <div id="fieldsContainer">
+                <div class="field-row">
+                    <input type="text" class="fieldName" placeholder="name" required>
+                    <select class="fieldType">
+                        <option value="VARCHAR(255)">STRING</option>
+                        <option value="INT">INTEGER</option>
+                        <option value="BOOLEAN">BOOLEAN</option>
+                    </select>
+                </div>
+            </div>
+            
+            <button type="button" id="addFieldBtn" style="color: blue; background: none; border: none; cursor: pointer; padding: 0;">Add another field</button>
+            
+            <br><br>
+            <button type="submit" style="background-color: #ff6600; color: white; padding: 8px 16px; border: none; cursor: pointer;">Create Table</button>
+        </form>
+    </div>
+
+    <script>
+        // 1. Logic to add new input rows dynamically
+        document.getElementById('addFieldBtn').addEventListener('click', () => {
+            const container = document.getElementById('fieldsContainer');
+            const row = document.createElement('div');
+            row.className = 'field-row';
+            row.innerHTML = `
+                <input type="text" class="fieldName" placeholder="field name" required>
+                <select class="fieldType">
+                    <option value="VARCHAR(255)">STRING</option>
+                    <option value="INT">INTEGER</option>
+                    <option value="BOOLEAN">BOOLEAN</option>
+                </select>
+            `;
+            container.appendChild(row);
+        });
+
+        // 2. Logic to intercept the form submission and send as JSON
+        document.getElementById('createTableForm').addEventListener('submit', async (e) => {
+            e.preventDefault(); // Stop normal HTML form submission
+
+            const tableName = document.getElementById('tableName').value;
+            const fieldNames = document.querySelectorAll('.fieldName');
+            const fieldTypes = document.querySelectorAll('.fieldType');
+            
+            // Build the array of field objects
+            let fields = [];
+            for(let i = 0; i < fieldNames.length; i++) {
+                fields.push({
+                    name: fieldNames[i].value,
+                    type: fieldTypes[i].value
+                });
+            }
+
+            // Send the data exactly like Postman does
+            try {
+                const response = await fetch('/create-table', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ tableName, fields })
+                });
+
+                if(response.ok) {
+                    alert('Table create successfully');
+                    window.location.href = '/'; // Redirect back to the home page
+                } else {
+                    const err = await response.json();
+                    alert('Error: ' + err.message);
+                }
+            } catch (error) {
+                console.error("Network error:", error);
+            }
+        });
+    </script>
+</body>
+</html>
