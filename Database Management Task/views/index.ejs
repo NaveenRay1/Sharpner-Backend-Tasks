@@ -6,13 +6,14 @@
     <title>Database Management</title>
     <style>
         body { font-family: sans-serif; margin: 0; padding: 0; display: flex; height: 100vh; }
-        .sidebar { width: 250px; background: #f4f4f4; border-right: 1px solid #ccc; padding: 20px; }
+        .sidebar { width: 250px; background: #f4f4f4; border-right: 1px solid #ccc; padding: 20px; overflow-y: auto; }
         .main-content { flex-grow: 1; padding: 20px; overflow-y: auto; }
         table { border-collapse: collapse; width: 100%; margin-top: 20px; }
         th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
         th { background-color: #f2f2f2; }
-        .btn-create { background-color: #ff6600; color: white; padding: 10px; border: none; cursor: pointer; text-decoration: none; display: inline-block; margin-top: 20px; }
-        .btn-insert { background-color: #28a745; color: white; padding: 10px; border: none; cursor: pointer; float: right; border-radius: 4px; }
+        .btn-create { background-color: #ff6600; color: white; padding: 10px; border: none; cursor: pointer; text-decoration: none; display: block; text-align: center; margin-top: 20px; border-radius: 4px; font-weight: bold;}
+        .btn-insert { background-color: #28a745; color: white; padding: 10px 15px; border: none; cursor: pointer; float: right; border-radius: 4px; font-weight: bold;}
+        .btn-delete { background-color: #dc3545; color: white; padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;}
         
         /* Native Dialog Modal Styles */
         dialog {
@@ -30,18 +31,22 @@
 <body>
 
     <div class="sidebar">
-        <h2><%= dbName %></h2>
+        <h2 style="margin-top: 0;"><%= dbName %></h2>
         <hr>
         <ul style="list-style-type: none; padding: 0;">
-            <% tables.forEach(table => { 
-                const tblName = Object.values(table)[0]; 
-            %>
-                <li style="margin-bottom: 12px;">
-                    <a href="/table/<%= tblName %>" style="text-decoration: none; color: #333; font-size: 18px; font-weight: bold;">
-                        <%= tblName %>
-                    </a>
-                </li>
-            <% }) %>
+            <% if (tables && tables.length > 0) { %>
+                <% tables.forEach(table => { 
+                    const tblName = Object.values(table)[0]; 
+                %>
+                    <li style="margin-bottom: 12px;">
+                        <a href="/table/<%= tblName %>" style="text-decoration: none; color: <%= selectedTable === tblName ? '#ff6600' : '#333' %>; font-size: 18px; font-weight: bold;">
+                            <%= tblName %>
+                        </a>
+                    </li>
+                <% }) %>
+            <% } else { %>
+                <li style="color: #666; font-style: italic;">No tables yet</li>
+            <% } %>
         </ul>
         
         <a href="/create-table" class="btn-create">+ Create new table</a>
@@ -60,12 +65,13 @@
                         <% columns.forEach(col => { %>
                             <th><%= col.Field %></th>
                         <% }) %>
+                        <th style="text-align: center; width: 100px;">Action</th>
                     </tr>
                 </thead>
                 <tbody>
                     <% if (records.length === 0) { %>
                         <tr>
-                            <td colspan="<%= columns.length %>" style="text-align: center; color: #666; padding: 20px;">No records found.</td>
+                            <td colspan="<%= columns.length + 1 %>" style="text-align: center; color: #666; padding: 20px;">No records found in this table.</td>
                         </tr>
                     <% } else { %>
                         <% records.forEach(row => { %>
@@ -73,6 +79,11 @@
                                 <% columns.forEach(col => { %>
                                     <td><%= row[col.Field] %></td>
                                 <% }) %>
+                                <td style="text-align: center;">
+                                    <form action="/table/<%= selectedTable %>/delete/<%= row.id %>" method="POST" style="margin: 0; display: inline;">
+                                        <button type="submit" class="btn-delete" onclick="return confirm('Are you sure you want to delete this record?');">Delete</button>
+                                    </form>
+                                </td>
                             </tr>
                         <% }) %>
                     <% } %>
@@ -81,7 +92,7 @@
 
             <dialog id="insertModal">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                    <h3 style="margin: 0; color: #333;">Add record</h3>
+                    <h3 style="margin: 0; color: #333;">Add record to <%= selectedTable %></h3>
                     <button onclick="document.getElementById('insertModal').close()" style="background: none; border: none; cursor: pointer; font-size: 18px; color: #666;">X</button>
                 </div>
                 
@@ -89,17 +100,19 @@
                     <% columns.forEach(col => { %>
                         <% if(col.Field !== 'id' && col.Field !== 'createdAt' && col.Field !== 'updatedAt') { %>
                             <div style="margin-bottom: 15px;">
-                                <input type="text" name="<%= col.Field %>" placeholder="<%= col.Field %>" required style="width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px;">
+                                <label style="display: block; margin-bottom: 5px; font-weight: bold; font-size: 14px; color: #555;"><%= col.Field %></label>
+                                <input type="text" name="<%= col.Field %>" required style="width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px;">
                             </div>
                         <% } %>
                     <% }) %>
-                    <button type="submit" style="background-color: #f4f4f4; color: #333; border: 1px solid #ccc; padding: 10px; cursor: pointer; width: 100%; border-radius: 4px; font-weight: bold;">Add record</button>
+                    <button type="submit" style="background-color: #28a745; color: white; border: none; padding: 10px; cursor: pointer; width: 100%; border-radius: 4px; font-weight: bold; margin-top: 10px;">Add record</button>
                 </form>
             </dialog>
 
         <% } else { %>
             <div style="text-align: center; margin-top: 20%;">
-                <h2 style="color: #666;">Select a table from the left to view its data.</h2>
+                <h2 style="color: #666;">Select a table from the left sidebar to view its data.</h2>
+                <p style="color: #999;">Or click "Create new table" to get started.</p>
             </div>
         <% } %>
     </div>

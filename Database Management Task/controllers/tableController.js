@@ -93,6 +93,23 @@ const insertRecord = async (req, res) => {
         return res.status(500).json({ message: err.message });
     }
 }
+// NEW: Delete a specific record
+const deleteRecord = async (req, res) => {
+    try {
+        const tableName = req.params.tableName;
+        const recordId = req.params.id;
 
-// Don't forget to export it!
-module.exports = { getHomePage, createTable, getTableData, insertRecord };
+        // Run the delete query using the record's unique ID
+        const sql = `DELETE FROM ${tableName} WHERE id = ${recordId}`;
+        await sequelize.query(sql);
+
+        // Refresh the page to show the updated table
+        res.redirect(`/table/${tableName}`);
+    } catch (err) {
+        console.log('Error deleting record:', err);
+        return res.status(500).json({ message: err.message });
+    }
+}
+
+
+module.exports = { getHomePage, createTable, getTableData, insertRecord, deleteRecord };

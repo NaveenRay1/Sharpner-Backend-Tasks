@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Social Media App</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            background-color: #df969e;
+            font-family: Arial, sans-serif; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            padding: 40px 20px;
+        }
+        h2 { color: #333; margin-bottom: 20px; text-align: center; }
+        
+        .form-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 40px;
+        }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 14px;}
+        input[type="text"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        button:hover { background-color: #45a049; }
+
+        .posts-container { width: 100%; max-width: 450px; }
+        .post-card {
+            background-color: #2c3e50;
+            color: white;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        .post-card img { width: 100%; height: auto; display: block; }
+        .post-content { padding: 15px; text-align: center; }
+        .post-description { font-size: 14px; margin-bottom: 15px; }
+        
+        .comment-box { display: flex; gap: 10px; margin-bottom: 15px; }
+        .comment-box input { flex-grow: 1; }
+        .comment-box button { background-color: white; color: #333; padding: 8px 15px; }
+        
+        .comments-list { text-align: center; font-size: 13px;}
+        .comment-item { margin-bottom: 5px; }
+        .comment-author { color: #f39c12; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div class="form-container">
+        <h2>Create a Post</h2>
+        <form action="/posts" method="POST">
+            <div class="form-group">
+                <label for="imageUrl">Post Link:</label>
+                <input type="text" name="imageUrl" id="imageUrl" required placeholder="https://image-url.com/img.jpg">
+            </div>
+            <div class="form-group">
+                <label for="description">Post Description:</label>
+                <input type="text" name="description" id="description" required placeholder="Visited venkateswara temple">
+            </div>
+            <button type="submit">Create Post</button>
+        </form>
+    </div>
+
+    <h2>Posts</h2>
+    <div class="posts-container">
+        <% posts.forEach(post => { %>
+            <div class="post-card">
+                <img src="<%= post.imageUrl %>" alt="Post Image">
+                <div class="post-content">
+                    <div class="post-description">User - <%= post.description %></div>
+                    <div style="margin-bottom: 10px; font-size: 12px;">💬 Comment</div>
+                    
+                    <form action="/posts/<%= post.id %>/comments" method="POST" class="comment-box">
+                        <input type="text" name="text" required placeholder="Write a Comment...">
+                        <button type="submit">Send</button>
+                    </form>
+
+                    <div class="comments-list">
+                        <% post.Comments.forEach(comment => { %>
+                            <div class="comment-item">
+                                <span class="comment-author"><%= comment.username %> - </span>
+                                <span><%= comment.text %></span>
+                            </div>
+                        <% }) %>
+                    </div>
+                </div>
+            </div>
+        <% }) %>
+    </div>
+
+</body>
+</html>
