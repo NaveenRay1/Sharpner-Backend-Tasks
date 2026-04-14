@@ -1,13 +1,12 @@
 const express = require('express');
 const sequelize = require('./config/db');
 const app = express();
-const {Post,Comment} = require('./models/index');
+
+const postRoute = require('./routes/postRoutes');
 app.use(express.json());
 
 
-app.get('/',(req,res)=>{
-res.send('woriking');
-})
+app.use('/posts',postRoute);
 
 const start = async()=>{
     try{
