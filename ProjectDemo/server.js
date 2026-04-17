@@ -1,12 +1,14 @@
 const express = require('express');
 const sequelize = require('./config/db');
 const app = express();
+const cors = require('cors');
 
+const path = require('path');
 const postRoute = require('./routes/postRoutes');
 const commentRoute = require('./routes/commentRoutes');
 app.use(express.json());
-
-
+app.use(cors());
+app.use(express.static(path.join(__dirname, 'public')));
 app.use('/posts',postRoute);
 app.use('/posts',commentRoute);
 const start = async()=>{

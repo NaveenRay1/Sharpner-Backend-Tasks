@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Feed</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <div class="form-container">
+    <h2>Create a Post</h2>
+    <div class="form-group">
+      <label for="linkInput">Post Link:</label>
+      <input type="text" id="linkInput" placeholder="https://image-url.com/img.jpg" />
+    </div>
+    <div class="form-group">
+      <label for="descInput">Post Description:</label>
+      <input type="text" id="descInput" placeholder="Visited venkateswara temple" />
+    </div>
+    <button class="btn-post" onclick="createPost()">Create Post</button>
+  </div>
+
+  <h2>Posts</h2>
+  <div class="posts-container" id="postsContainer"></div>
+
+  <div id="toast"></div>
+
+  <script>
+    const API = 'http://localhost:3000';
+
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 2500);
+    }
+
+    async function loadPosts() {
+      try {
+        const res = await fetch(`${API}/posts`);
+        const data = await res.json();
+        const container = document.getElementById('postsContainer');
+        container.innerHTML = '';
+        if (res.status === 404 || !data.data || data.data.length === 0) {
+          container.innerHTML = `<div class="empty-state">No posts yet. Be the first! </div>`;
+          return;
+        }
+        data.data.forEach(post => renderPost(post));
+      } catch (err) {
+        console.error(err);
+        showToast('Could not load posts');
+      }
+    }
+
+    function renderPost(post) {
+      const container = document.getElementById('postsContainer');
+      const card = document.createElement('div');
+      card.className = 'post-card';
+      card.id = `post-${post.id}`;
+
+     const mediaHTML = `<img src="${post.link}" alt="Post image" onerror="this.outerHTML='<div class=post-img-placeholder>🔗</div>'">`;
+
+      const commentsHTML = post.Comments && post.Comments.length > 0
+        ? post.Comments.map(c => renderCommentHTML(c)).join('')
+        : '';
+
+      card.innerHTML = `
+        ${mediaHTML}
+        <div class="post-body">
+          <div class="post-description">User - ${post.description}</div>
+          
+          <div class="post-footer">
+             <span class="comment-count">💬 Comment (${post.Comments ? post.Comments.length : 0})</span>
+             <button class="btn-delete-post" onclick="deletePost(${post.id})">Delete</button>
+          </div>
+
+          <div class="comment-input-row">
+            <input type="text" id="commentInput-${post.id}" placeholder="Write a Comment..." />
+            <button class="btn-send" onclick="addComment(${post.id})">Send</button>
+          </div>
+          <div class="comments-list" id="comments-${post.id}">
+            ${commentsHTML}
+          </div>
+        </div>
+      `;
+      container.appendChild(card);
+    }
+
+    function renderCommentHTML(comment) {
+      return `
+        <div class="comment-item" id="comment-${comment.id}">
+          <div class="comment-left">
+            <span class="comment-author">Anonymous -</span>
+            <span class="comment-text">${comment.body}</span>
+          </div>
+          <button class="btn-delete-comment" onclick="deleteComment(${comment.id}, ${comment.postId})" title="Delete">✕</button>
+        </div>
+      `;
+    }
+
+    async function createPost() {
+      const link = document.getElementById('linkInput').value.trim();
+      const description = document.getElementById('descInput').value.trim();
+      if (!link || !description) { showToast('Fill in both fields!'); return; }
+      try {
+        const res = await fetch(`${API}/posts`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ link, description })
+        });
+        if (!res.ok) { const err = await res.json(); showToast(err.message || 'Failed'); return; }
+        document.getElementById('linkInput').value = '';
+        document.getElementById('descInput').value = '';
+        showToast('Post created! 🎉');
+        loadPosts();
+      } catch (err) { showToast('Something went wrong'); }
+    }
+
+    async function deletePost(postId) {
+      try {
+        const res = await fetch(`${API}/posts/${postId}`, { method: 'DELETE' });
+        if (!res.ok) { showToast('Could not delete post'); return; }
+        document.getElementById(`post-${postId}`)?.remove();
+        showToast('Post deleted');
+        const container = document.getElementById('postsContainer');
+        if (container.children.length === 0)
+          container.innerHTML = `<div class="empty-state">No posts yet. Be the first! 👆</div>`;
+      } catch (err) { showToast('Something went wrong'); }
+    }
+
+    async function addComment(postId) {
+      const input = document.getElementById(`commentInput-${postId}`);
+      const body = input.value.trim();
+      if (!body) { showToast('Write something first!'); return; }
+      try {
+        const res = await fetch(`${API}/posts/${postId}/comments`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ body })
+        });
+        if (!res.ok) { showToast('Could not add comment'); return; }
+        const data = await res.json();
+        document.getElementById(`comments-${postId}`).insertAdjacentHTML('beforeend', renderCommentHTML(data.data));
+        input.value = '';
+        const countEl = document.querySelector(`#post-${postId} .comment-count`);
+        
+        // Extract the current count safely
+        const currentText = countEl.textContent;
+        const currentCount = parseInt(currentText.match(/\d+/)[0]);
+        countEl.textContent = `💬 Comment (${currentCount + 1})`;
+        
+        showToast('Comment added!');
+      } catch (err) { showToast('Something went wrong'); }
+    }
+
+    async function deleteComment(commentId, postId) {
+      try {
+        const res = await fetch(`${API}/posts/comments/${commentId}`, { method: 'DELETE' });
+        if (!res.ok) { showToast('Could not delete comment'); return; }
+        document.getElementById(`comment-${commentId}`)?.remove();
+        const countEl = document.querySelector(`#post-${postId} .comment-count`);
+        
+        const currentText = countEl.textContent;
+        const currentCount = parseInt(currentText.match(/\d+/)[0]);
+        countEl.textContent = `💬 Comment (${Math.max(0, currentCount - 1)})`;
+        
+        showToast('Comment deleted');
+      } catch (err) { showToast('Something went wrong'); }
+    }
+
+    loadPosts();
+  </script>
+</body>
+</html>
